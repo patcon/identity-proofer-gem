@@ -23,6 +23,12 @@ module Proofer
 
       def build_question_set(_vendor_resp)
       end
+
+    private
+
+      def submit_check
+      end
+
     end
   end
 end

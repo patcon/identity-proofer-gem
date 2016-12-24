@@ -25,6 +25,7 @@ Gem::Specification.new do |s|
   s.rdoc_options = ["--charset=UTF-8"]
 
   s.add_dependency('dotenv')
+  s.add_dependency('svelte')
 
   s.add_development_dependency('bundler')
   s.add_development_dependency('rspec')
