@@ -42,7 +42,7 @@ module Proofer
         response = Svelte::Service::CanEreg::Checks.create_check(
           first_name: applicant.first_name,
           last_name: applicant.last_name,
-          birth_date: formatted_date(applicant.dob),
+          birth_date: formatted_date,
           full_address: "#{applicant.address1}, #{applicant.city}, #{applicant.state}"
         )
         check_id = response.env.response_headers['Location'].split('/')[-1]
