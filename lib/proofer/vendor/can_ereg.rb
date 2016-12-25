@@ -22,6 +22,7 @@ module Proofer
         status = nil
 
         until status == 'SUCCESS' do
+          sleep(5)
           response = get_check(check_id)
           status = response['status']
         end
