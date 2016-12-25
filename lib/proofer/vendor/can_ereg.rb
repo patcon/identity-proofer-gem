@@ -19,7 +19,7 @@ module Proofer
 
       def perform_resolution
         check_id = submit_check
-        status = None
+        status = nil
 
         until status == 'SUCCESS' do
           response = get_check(check_id)
