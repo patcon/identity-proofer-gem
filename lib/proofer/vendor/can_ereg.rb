@@ -6,7 +6,7 @@ module Proofer
     class CanEreg < VendorBase
 
       def initialize(opts = {})
-        super.initialize(opts)
+        super()
         Svelte::Service.create(url: 'https://can-ereg-api.herokuapp.com/v1/swagger.json', module_name: 'CanEreg')
       end
 
