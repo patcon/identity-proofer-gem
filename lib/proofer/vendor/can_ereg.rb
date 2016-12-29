@@ -47,11 +47,15 @@ module Proofer
         check_id = body['check_id']
         status = nil
 
-        until status == 'SUCCESS' do
-          sleep(10)
+        i = 0
+        until status == 'SUCCESS' or i > 10 do
+          sleep(10) and i++
           body = get_check(check_id)
-          puts body
           status = body['status']
+        end
+
+        unless status == 'SUCCESS'
+          return failed_resolution({ error: 'Failed to receive response from proofing vendor.' }, SecureRandom.uuid)
         end
 
         if body['registered']
@@ -73,7 +77,6 @@ module Proofer
           birth_date: formatted_date,
           full_address: "#{applicant.address1}, #{applicant.city}, #{applicant.state}"
         )
-        puts response
 
         JSON.parse(response.body)
       end
