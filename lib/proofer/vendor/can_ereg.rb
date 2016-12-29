@@ -27,10 +27,10 @@ module Proofer
           status = response['status']
         end
 
-        if response['result']['registered']
+        if response['registered']
           successful_resolution({ kbv: false }, SecureRandom.uuid)
         else
-          failed_resolution({ error: response['result']['message'] }, SecureRandom.uuid)
+          failed_resolution({ error: response['raw_message'] }, SecureRandom.uuid)
         end
       end
 
