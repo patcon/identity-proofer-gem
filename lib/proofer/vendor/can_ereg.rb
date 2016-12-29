@@ -1,13 +1,38 @@
 require 'proofer/vendor/vendor_base'
-require 'svelte'
+require 'httparty'
 
 module Proofer
   module Vendor
+    class CanEregClient
+      include HTTParty
+      base_uri 'can-ereg-api.herokuapp.com'
+
+      def initialize(api_key: nil)
+        @options = {}
+
+        if api_key
+          @options[:headers] ={
+            'Authorization' => api_key,
+          }
+        end
+      end
+
+      def create_check(**params)
+        @options.merge!({ body:params })
+
+        self.class.post("/v1/checks", @options)
+      end
+
+      def get_check(check_id:)
+        self.class.get("/v1/checks/#{check_id}", @options)
+      end
+    end
+
     class CanEreg < VendorBase
 
       def initialize(opts = {})
         super()
-        Svelte::Service.create(url: 'https://can-ereg-api.herokuapp.com/v1/swagger.json', module_name: 'CanEreg')
+        @client = CanEregClient.new(api_key: ENV['CAN_EREG_API_KEY'])
       end
 
       def submit_answers(question_set, session_id = nil)
@@ -18,19 +43,21 @@ module Proofer
       end
 
       def perform_resolution
-        check_id = submit_check
+        body = submit_check
+        check_id = body['check_id']
         status = nil
 
         until status == 'SUCCESS' do
-          sleep(5)
-          response = get_check(check_id)
-          status = response['status']
+          sleep(10)
+          body = get_check(check_id)
+          puts body
+          status = body['status']
         end
 
-        if response['registered']
+        if body['registered']
           successful_resolution({ kbv: false }, SecureRandom.uuid)
         else
-          failed_resolution({ error: response['raw_message'] }, SecureRandom.uuid)
+          failed_resolution({ error: body['raw_message'] }, SecureRandom.uuid)
         end
       end
 
@@ -40,21 +67,21 @@ module Proofer
     private
 
       def submit_check
-        response = Svelte::Service::CanEreg::Checks.create_check(
+        response = @client.create_check(
           first_name: applicant.first_name,
           last_name: applicant.last_name,
           birth_date: formatted_date,
           full_address: "#{applicant.address1}, #{applicant.city}, #{applicant.state}"
         )
-        check_id = response.env.response_headers['Location'].split('/')[-1]
+        puts response
 
-        check_id
+        JSON.parse(response.body)
       end
 
       def get_check(check_id)
-        response = Svelte::Service::CanEreg::Checks.get_check(check_id:check_id)
+        response = @client.get_check(check_id:check_id)
 
-        response.env.body
+        JSON.parse(response.body)
       end
 
       def formatted_date
